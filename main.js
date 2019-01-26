@@ -1,22 +1,45 @@
 class Canvas {
-  constructor(canvas, content) {
+  constructor(canvas, props) {
     this.width   = canvas.clientWidth;
     this.height  = canvas.clientHeight;
     this.ctx     = canvas.getContext('2d');
     this.gameOn  = false;
-    this.content = content;
+    this.props   = { 
+                      rectCollection: props.rectCollection, 
+                      score: props.score 
+                    };
   }
   animateStart() {
     this.gameOn = true;
+    this.props.score.resetValue();
     this._animate();
   }
   animateStop() {
     this.gameOn = false;
   }
+  handleClick(event) {
+    const { layerX: eventX, 
+            layerY: eventY } = event;
+    this.props.rectCollection.content.forEach(el => {
+      if(clickWitih(el)) {
+        this.props.score.incrementValue();
+        this.props.rectCollection.remove(el);
+      }
+    })
+
+    function clickWitih(el) {
+      return (
+        eventY > el.posY && 
+        eventY < el.posY + el.size[1] && 
+        eventX > el.posX && 
+        eventX < el.posX + el.size[0]
+      );
+    }
+  }
   _animate() {
     this._clear();
-    this._fillRectCollection(this.content.rectCollection);
-    this.content.setNextFrame()
+    this._fillRectCollection(this.props.rectCollection.content);
+    this.props.rectCollection.setNextFrame()
     if(this.gameOn) {
       requestAnimationFrame(this._animate.bind(this));
      } else this._clear();
@@ -34,17 +57,17 @@ class Canvas {
 
 class RectangleCollection {
   constructor(canvasHeight) {
-    this.rectCollection = [];
+    this.content = [];
     this.canvasHeight   = canvasHeight
   }
   setNextFrame() {
-    this.rectCollection.forEach(el => el.increaseY(this.canvasHeight));
+    this.content.forEach(el => el.increaseY(this.canvasHeight));
   }
   add(rect) {
-    this.rectCollection.push(rect);
+    this.content.push(rect);
   }
   remove(rect) {
-    this.rectCollection = this.rectCollection.filter(el => el !== rect);
+    this.content = this.content.filter(el => el !== rect);
   }
 }
 
@@ -62,16 +85,45 @@ class Rectangle {
   }
 }
 
+class GameScore {
+  constructor(scoreEl) {
+    this.element = scoreEl;
+    this.value = 0;
+  }
+  incrementValue() {
+    this.value += 1;
+    this._updateElement();
+  }
+  resetValue() {
+    this.value = 0;
+    this._updateElement();
+  }
+  _updateElement() {
+    this.element.innerText = this.value;
+  }
+}
+
+var scoreEl = document.getElementById('score');
 var canvasEl = document.getElementById('canvas');
-var content = new RectangleCollection(canvasEl.height);
-content.add(new Rectangle(
-                          { posX: 320,
+
+var score = new GameScore(scoreEl); 
+var collection = new RectangleCollection(canvasEl.height);
+collection.add(new Rectangle(
+                          { posX: 0,
                             posY: 0, 
                             stepY: 1, 
                             color: '#000000', 
                             size: [20, 20] }
                           ));
-var canvas = new Canvas(canvasEl, content);
+var canvas = new Canvas(canvasEl,
+                          { 
+                            rectCollection: collection, 
+                            score: score 
+                          }
+                        );
+canvasEl.addEventListener('click', (ev) => {
+  canvas.handleClick(ev);
+})
 document.getElementById('start').addEventListener('click', ()=> {
   canvas.animateStart()
 });
