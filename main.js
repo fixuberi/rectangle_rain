@@ -1,9 +1,46 @@
+const config = {
+  gameProcess: {
+     spawnRectanglesTimeRange: [0, 3000]
+  },
+  rectangleProps: {
+     size: [20, 20],
+     moveDownStepRange: [1, 4]
+  }
+}
+
+document.body.onload = () => setupGame(config);
+
+function setupGame(config) {
+  let scoreEl  = document.getElementById('score');
+  let canvasEl = document.getElementById('canvas');
+
+  let score      = new GameScore(scoreEl); 
+  let collection = new RectangleCollection(canvasEl.height);
+  let canvas     = new Canvas(canvasEl);
+  let game       = new Game({ canvas: canvas, 
+                              rectCollection: collection,
+                              score: score,
+                              config: config
+                            });
+
+  canvasEl.addEventListener('click', (ev) => {
+    game.handleClick(ev);
+  });
+  document.getElementById('start').addEventListener('click', ()=> {
+    game.start();
+  });
+  document.getElementById('stop').addEventListener('click', ()=> {
+    game.stop();
+  });
+}
+
 class Game {
-  constructor({ canvas, rectCollection, score }) {
-    this.canvas = canvas;
+  constructor({ canvas, rectCollection, score, config }) {
+    this.canvas         = canvas;
     this.rectCollection = rectCollection;
-    this.score = score;
-    this.gameOn  = false;
+    this.score          = score;
+    this.gameOn         = false;
+    this.config         = config;
     this.spawnRectangleTimeoutId;
   }
   start() {
@@ -45,9 +82,12 @@ class Game {
   _spawnRectangles(isOn) {
     if(isOn) {
       this.spawnRectangleTimeoutId = setTimeout( async () => {
-        await this.rectCollection.add(new Rectangle({ maxPosX: this.canvas.width, maxPosY: 0 }));
+        await this.rectCollection.add(new Rectangle({ maxPosX: this.canvas.width, 
+                                                      maxPosY: 0,
+                                                      moveDownStepRange: this.config.rectangleProps.moveDownStepRange,
+                                                      size: this.config.rectangleProps.size }));
         this._spawnRectangles(true);
-      }, this._randomNum(0, 3000));
+      }, this._randomNum(...this.config.gameProcess.spawnRectanglesTimeRange));
     } else {
       clearTimeout(this.spawnRectangleTimeoutId);
     }
@@ -105,16 +145,16 @@ class RectangleCollection {
 }
 
 class Rectangle {
-  constructor({ maxPosX, maxPosY }) {
-    this.size  = [20, 20];
+  constructor({ maxPosX, maxPosY, moveDownStepRange, size }) {
+    this.size  = size;
     this.posX  = this._randomNum(0, maxPosX-this.size[0]);
     this.posY  = this._randomNum(0, maxPosY-this.size[1]);
-    this.stepY = this._randomNum(1, 4);
+    this.stepY = this._randomNum(...moveDownStepRange);
     this.color = this._randomColor();
   }
   increaseY(canvasHeight) {
     this.posY += this.stepY;
-    if (this.posY >= canvasHeight) this.posY = 0;
+    if (this.posY >= canvasHeight) this.posY = 0; 
   }
   _randomNum(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min);
@@ -142,22 +182,3 @@ class GameScore {
   }
 }
 
-var scoreEl = document.getElementById('score');
-var canvasEl = document.getElementById('canvas');
-
-var score = new GameScore(scoreEl); 
-var collection = new RectangleCollection(canvasEl.height);
-var canvas = new Canvas(canvasEl);
-var game = new Game({ canvas: canvas, 
-                        rectCollection: collection,
-                        score: score 
-                      });
-canvasEl.addEventListener('click', (ev) => {
-  game.handleClick(ev);
-})
-document.getElementById('start').addEventListener('click', ()=> {
-  game.start();
-});
-document.getElementById('stop').addEventListener('click', ()=> {
-  game.stop();
-});
