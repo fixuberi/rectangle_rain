@@ -1,38 +1,34 @@
-class Canvas {
-  constructor(canvas, props) {
-    this.width   = canvas.clientWidth;
-    this.height  = canvas.clientHeight;
-    this.ctx     = canvas.getContext('2d');
+class Game {
+  constructor({ canvas, rectCollection, score }) {
+    this.canvas = canvas;
+    this.rectCollection = rectCollection;
+    this.score = score;
     this.gameOn  = false;
-    this.props   = { 
-                      rectCollection: props.rectCollection, 
-                      score: props.score 
-                    };
     this.spawnRectangleTimeoutId;
   }
-  animateStart() {
-    if(!this.gameOn) {
+  start() {
+      if(!this.gameOn) {
       this.gameOn = true;
-      this.props.score.resetValue();
-      this._spawnRectangles();
-      this._animate();
+      this.score.resetValue();
+      this._spawnRectangles(true);
+      this._renderRectCollection();
     }
   }
-  animateStop() {
+  stop() {
     this.gameOn = false;
-    clearTimeout(this.spawnRectangleTimeoutId);
-    this.props.rectCollection.clear();
+    this._spawnRectangles(false);
+    this.rectCollection.clear();
   }
   handleClick(event) {
     const { layerX: eventX, 
             layerY: eventY } = event;
-    let rectCount = this.props.rectCollection.content.length;
+    let rectCount = this.rectCollection.content.length;
 
     for (let i= rectCount - 1; i >= 0; i--) {
-      let currEl = this.props.rectCollection.content[i];
+      let currEl = this.rectCollection.content[i];
       if(clickWithin(currEl)) {
-        this.props.score.incrementValue();
-        this.props.rectCollection.remove(currEl);
+        this.score.incrementValue();
+        this.rectCollection.remove(currEl);
         break;
       }
     }
@@ -46,31 +42,46 @@ class Canvas {
       );
     }
   }
-  _spawnRectangles() {
-    this.spawnRectangleTimeoutId = setTimeout( async () => {
-        await this.props.rectCollection.add(new Rectangle({ maxPosX: this.width, maxPosY: 0 }));
-        this._spawnRectangles();
+  _spawnRectangles(isOn) {
+    if(isOn) {
+      this.spawnRectangleTimeoutId = setTimeout( async () => {
+        await this.rectCollection.add(new Rectangle({ maxPosX: this.canvas.width, maxPosY: 0 }));
+        this._spawnRectangles(true);
       }, this._randomNum(0, 3000));
+    } else {
+      clearTimeout(this.spawnRectangleTimeoutId);
+    }
   }
-  _animate() {
-    this._clear();
-    this._fillRectCollection(this.props.rectCollection.content);
-    this.props.rectCollection.setNextFrame()
+  _renderRectCollection() {
+    this.canvas.renderFrameWithRectCollection(this.rectCollection.content);
     if(this.gameOn) {
-      requestAnimationFrame(this._animate.bind(this));
-     } else this._clear();
+      this.rectCollection.setNextFrame()
+      requestAnimationFrame(this._renderRectCollection.bind(this));
+     } else this.canvas.clear();
   }
-  _clear() {
+  _randomNum(min, max) {
+    return Math.floor(Math.random() * (max - min + 1) + min);
+  }
+}
+
+class Canvas {
+  constructor(canvasEl) {
+    this.width   = canvasEl.clientWidth;
+    this.height  = canvasEl.clientHeight;
+    this.ctx     = canvasEl.getContext('2d');
+  }
+  clear() {
     this.ctx.clearRect(0, 0, this.width, this.width);
+  }
+  renderFrameWithRectCollection(collection) {
+    this.clear();
+    this._fillRectCollection(collection);
   }
   _fillRectCollection(collection) {
     collection.forEach(el => {
       this.ctx.fillStyle = el.color;
       this.ctx.fillRect(el.posX, el.posY, ...el.size);
     });
-  }
-  _randomNum(min, max) {
-    return Math.floor(Math.random() * (max - min + 1) + min);
   }
 }
 
@@ -136,18 +147,17 @@ var canvasEl = document.getElementById('canvas');
 
 var score = new GameScore(scoreEl); 
 var collection = new RectangleCollection(canvasEl.height);
-var canvas = new Canvas(canvasEl,
-                          { 
-                            rectCollection: collection, 
-                            score: score 
-                          }
-                        );
+var canvas = new Canvas(canvasEl);
+var game = new Game({ canvas: canvas, 
+                        rectCollection: collection,
+                        score: score 
+                      });
 canvasEl.addEventListener('click', (ev) => {
-  canvas.handleClick(ev);
+  game.handleClick(ev);
 })
 document.getElementById('start').addEventListener('click', ()=> {
-  canvas.animateStart()
+  game.start();
 });
 document.getElementById('stop').addEventListener('click', ()=> {
-  canvas.animateStop();
+  game.stop();
 });
