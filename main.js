@@ -8,33 +8,49 @@ class Canvas {
                       rectCollection: props.rectCollection, 
                       score: props.score 
                     };
+    this.spawnRectangleTimeoutId;
   }
   animateStart() {
-    this.gameOn = true;
-    this.props.score.resetValue();
-    this._animate();
+    if(!this.gameOn) {
+      this.gameOn = true;
+      this.props.score.resetValue();
+      this._spawnRectangles();
+      this._animate();
+    }
   }
   animateStop() {
     this.gameOn = false;
+    clearTimeout(this.spawnRectangleTimeoutId);
+    this.props.rectCollection.clear();
   }
   handleClick(event) {
     const { layerX: eventX, 
             layerY: eventY } = event;
-    this.props.rectCollection.content.forEach(el => {
-      if(clickWitih(el)) {
-        this.props.score.incrementValue();
-        this.props.rectCollection.remove(el);
-      }
-    })
+    let rectCount = this.props.rectCollection.content.length;
 
-    function clickWitih(el) {
+    for (let i= rectCount - 1; i >= 0; i--) {
+      let currEl = this.props.rectCollection.content[i];
+      if(clickWithin(currEl)) {
+        this.props.score.incrementValue();
+        this.props.rectCollection.remove(currEl);
+        break;
+      }
+    }
+
+    function clickWithin(el) {
       return (
-        eventY > el.posY && 
-        eventY < el.posY + el.size[1] && 
+        eventY > el.posY - el.stepY*3 && 
+        eventY < el.posY + el.size[1] - el.stepY*3 && 
         eventX > el.posX && 
         eventX < el.posX + el.size[0]
       );
     }
+  }
+  _spawnRectangles() {
+    this.spawnRectangleTimeoutId = setTimeout( async () => {
+        await this.props.rectCollection.add(new Rectangle({ maxPosX: this.width, maxPosY: 0 }));
+        this._spawnRectangles();
+      }, this._randomNum(0, 3000));
   }
   _animate() {
     this._clear();
@@ -53,6 +69,9 @@ class Canvas {
       this.ctx.fillRect(el.posX, el.posY, ...el.size);
     });
   }
+  _randomNum(min, max) {
+    return Math.floor(Math.random() * (max - min + 1) + min);
+  }
 }
 
 class RectangleCollection {
@@ -69,19 +88,28 @@ class RectangleCollection {
   remove(rect) {
     this.content = this.content.filter(el => el !== rect);
   }
+  clear() {
+    this.content = [];
+  }
 }
 
 class Rectangle {
-  constructor({ posX, posY, stepY, color, size }) {
-    this.posX  = posX;
-    this.posY  = posY;
-    this.stepY = stepY;
-    this.color = color;
-    this.size  = size;
+  constructor({ maxPosX, maxPosY }) {
+    this.size  = [20, 20];
+    this.posX  = this._randomNum(0, maxPosX-this.size[0]);
+    this.posY  = this._randomNum(0, maxPosY-this.size[1]);
+    this.stepY = this._randomNum(1, 4);
+    this.color = this._randomColor();
   }
   increaseY(canvasHeight) {
     this.posY += this.stepY;
     if (this.posY >= canvasHeight) this.posY = 0;
+  }
+  _randomNum(min, max) {
+    return Math.floor(Math.random() * (max - min + 1) + min);
+  }
+  _randomColor() {
+    return '#' + Math.floor(Math.random()*16777215).toString(16);
   }
 }
 
@@ -108,13 +136,6 @@ var canvasEl = document.getElementById('canvas');
 
 var score = new GameScore(scoreEl); 
 var collection = new RectangleCollection(canvasEl.height);
-collection.add(new Rectangle(
-                          { posX: 0,
-                            posY: 0, 
-                            stepY: 1, 
-                            color: '#000000', 
-                            size: [20, 20] }
-                          ));
 var canvas = new Canvas(canvasEl,
                           { 
                             rectCollection: collection, 
