@@ -18,6 +18,7 @@ function setupGame(config) {
                           controller: gameController,
                           config: config
                         });
+    canvasEl.addEventListener('click', (ev) => game.handleClick(ev));
     game.run();
 }
 
@@ -32,6 +33,11 @@ class Game {
     }
     run() {
         Game.controller.runCurrentScene();
+    }
+    handleClick(event) {
+        const { layerX: x, layerY: y } = event;
+        const click = { x, y };
+        this.currentScene.handleClick(click);
     }
 }
 function GameController({ score, currScene, sceneCollection }) {
