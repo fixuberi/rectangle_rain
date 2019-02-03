@@ -125,24 +125,24 @@ class Canvas {
   }
 }
 
-class RectangleCollection {
-  constructor(canvasHeight) {
-    this.content = [];
-    this.canvasHeight   = canvasHeight
-  }
-  setNextFrame() {
-    this.content.forEach(el => el.increaseY(this.canvasHeight));
-  }
-  add(rect) {
-    this.content.push(rect);
-  }
-  remove(rect) {
-    this.content = this.content.filter(el => el !== rect);
-  }
-  clear() {
-    this.content = [];
-  }
-}
+// class RectangleCollection {
+//   constructor(canvasHeight) {
+//     this.content = [];
+//     this.canvasHeight   = canvasHeight
+//   }
+//   setNextFrame() {
+//     this.content.forEach(el => el.increaseY(this.canvasHeight));
+//   }
+//   add(rect) {
+//     this.content.push(rect);
+//   }
+//   remove(rect) {
+//     this.content = this.content.filter(el => el !== rect);
+//   }
+//   clear() {
+//     this.content = [];
+//   }
+// }
 
 class Rectangle {
   constructor({ maxPosX, maxPosY, moveDownStepRange, size }) {

@@ -4,8 +4,8 @@ function setupGame(config) {
   
     let score           = new GameScore(scoreEl);
     let canvas          = new Canvas(canvasEl);
-    let sceneCollection = { menu: new MenuScene([new GameCollection], new InterfaceCollection),
-                            game: new GameScene([new GameCollection], new InterfaceCollection)
+    let sceneCollection = { menu: new MenuScene([new RectangleCollection], new InterfaceCollection),
+                            game: new GameScene([new RectangleCollection], new InterfaceCollection)
                           };//mocked collections
     let gameController  = new GameController({ score: score, 
                                               sceneCollection: sceneCollection,
@@ -114,8 +114,7 @@ class GameScene {
     }
 }
 
-//classes for test needs START
-class GameCollection {
+class RectangleCollection {
     animate() {
         console.log('animate game collection');
     }
@@ -125,11 +124,28 @@ class GameCollection {
     stopBackgroundEventLoop() {
         console.log('stop bg event loop')
     }
+
 }
 class InterfaceCollection {
+    constructor() {
+        this.content = [];
+        this.content.push({wasClicked: () => true});//stub element method
+    }
     animate() {
         console.log('animate interface');
     } 
+    handleClickAndReturnFeedback(click) {
+        for ( let i = this.content.length -1; i >= 0; i-- ) {
+            let currEl = this.content[i];
+            if(currEl.wasClicked(click)) {
+                this._fireEventByClick(currEl);
+                return true;
+            }
+        }
+    }
+    _fireEventByClick(currEl) {
+        console.warn('event was fired');
+    }
 }
 class MenuScene extends GameScene { }
-//classes for test needs END
+
