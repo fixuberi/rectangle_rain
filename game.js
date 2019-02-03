@@ -87,6 +87,16 @@ class GameScene {
         this.isRunning = false;
         this._stopCollectionsBackgroundEventLoop();
     }
+    handleClick(click) {
+        const interfaceIsClicked = this.interfaceObjectCollection
+                                       .handleClickAndReturnFeedback(click);
+        if(interfaceIsClicked) return;
+        for (let i = 0; i < this.gameObjectCollections.length; i++) {
+            const gameObjClicked = this.gameObjectCollections[i]
+                                       .handleClickAndReturnFeedback(click);
+            if(gameObjClicked) break;
+        } 
+    }
     _renderAllColections() {
         if(this.isRunning) {
             this.gameObjectCollections.forEach(gameObjCollection => {
