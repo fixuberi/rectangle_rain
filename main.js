@@ -10,99 +10,99 @@ const config = {
 
 document.body.onload = () => setupGame(config);
 
-function setupGame(config) {
-  let scoreEl  = document.getElementById('score');
-  let canvasEl = document.getElementById('canvas');
+// function setupGame(config) {
+//   let scoreEl  = document.getElementById('score');
+//   let canvasEl = document.getElementById('canvas');
 
-  let score      = new GameScore(scoreEl); 
-  let collection = new RectangleCollection(canvasEl.height);
-  let canvas     = new Canvas(canvasEl);
-  let game       = new Game({ canvas: canvas, 
-                              rectCollection: collection,
-                              score: score,
-                              config: config
-                            });
+//   let score      = new GameScore(scoreEl); 
+//   let collection = new RectangleCollection(canvasEl.height);
+//   let canvas     = new Canvas(canvasEl);
+//   let game       = new Game({ canvas: canvas, 
+//                               rectCollection: collection,
+//                               score: score,
+//                               config: config
+//                             });
 
-  canvasEl.addEventListener('click', (ev) => {
-    game.handleClick(ev);
-  });
-  document.getElementById('start').addEventListener('click', ()=> {
-    game.start();
-  });
-  document.getElementById('stop').addEventListener('click', ()=> {
-    game.stop();
-  });
-}
+//   canvasEl.addEventListener('click', (ev) => {
+//     game.handleClick(ev);
+//   });
+//   document.getElementById('start').addEventListener('click', ()=> {
+//     game.start();
+//   });
+//   document.getElementById('stop').addEventListener('click', ()=> {
+//     game.stop();
+//   });
+// }
 
-class Game {
-  constructor({ canvas, rectCollection, score, config }) {
-    this.canvas         = canvas;
-    this.rectCollection = rectCollection;
-    this.score          = score;
-    this.gameOn         = false;
-    this.config         = config;
-    this.spawnRectangleTimeoutId;
-  }
-  start() {
-      if(!this.gameOn) {
-      this.gameOn = true;
-      this.score.resetValue();
-      this._spawnRectangles(true);
-      this._renderRectCollection();
-    }
-  }
-  stop() {
-    this.gameOn = false;
-    this._spawnRectangles(false);
-    this.rectCollection.clear();
-  }
-  handleClick(event) {
-    const { layerX: eventX, 
-            layerY: eventY } = event;
-    let rectCount = this.rectCollection.content.length;
+// class Game {
+//   constructor({ canvas, rectCollection, score, config }) {
+//     this.canvas         = canvas;
+//     this.rectCollection = rectCollection;
+//     this.score          = score;
+//     this.gameOn         = false;
+//     this.config         = config;
+//     this.spawnRectangleTimeoutId;
+//   }
+//   start() {
+//       if(!this.gameOn) {
+//       this.gameOn = true;
+//       this.score.resetValue();
+//       this._spawnRectangles(true);
+//       this._renderRectCollection();
+//     }
+//   }
+//   stop() {
+//     this.gameOn = false;
+//     this._spawnRectangles(false);
+//     this.rectCollection.clear();
+//   }
+//   handleClick(event) {
+//     const { layerX: eventX, 
+//             layerY: eventY } = event;
+//     let rectCount = this.rectCollection.content.length;
 
-    for (let i= rectCount - 1; i >= 0; i--) {
-      let currEl = this.rectCollection.content[i];
-      if(clickWithin(currEl)) {
-        this.score.incrementValue();
-        this.rectCollection.remove(currEl);
-        break;
-      }
-    }
+//     for (let i= rectCount - 1; i >= 0; i--) {
+//       let currEl = this.rectCollection.content[i];
+//       if(clickWithin(currEl)) {
+//         this.score.incrementValue();
+//         this.rectCollection.remove(currEl);
+//         break;
+//       }
+//     }
 
-    function clickWithin(el) {
-      return (
-        eventY > el.posY - el.stepY*3 && 
-        eventY < el.posY + el.size[1] - el.stepY*3 && 
-        eventX > el.posX && 
-        eventX < el.posX + el.size[0]
-      );
-    }
-  }
-  _spawnRectangles(isOn) {
-    if(isOn) {
-      this.spawnRectangleTimeoutId = setTimeout( async () => {
-        await this.rectCollection.add(new Rectangle({ maxPosX: this.canvas.width, 
-                                                      maxPosY: 0,
-                                                      moveDownStepRange: this.config.rectangleProps.moveDownStepRange,
-                                                      size: this.config.rectangleProps.size }));
-        this._spawnRectangles(true);
-      }, this._randomNum(...this.config.gameProcess.spawnRectanglesTimeRange));
-    } else {
-      clearTimeout(this.spawnRectangleTimeoutId);
-    }
-  }
-  _renderRectCollection() {
-    this.canvas.renderFrameWithRectCollection(this.rectCollection.content);
-    if(this.gameOn) {
-      this.rectCollection.setNextFrame()
-      requestAnimationFrame(this._renderRectCollection.bind(this));
-     } else this.canvas.clear();
-  }
-  _randomNum(min, max) {
-    return Math.floor(Math.random() * (max - min + 1) + min);
-  }
-}
+//     function clickWithin(el) {
+//       return (
+//         eventY > el.posY - el.stepY*3 && 
+//         eventY < el.posY + el.size[1] - el.stepY*3 && 
+//         eventX > el.posX && 
+//         eventX < el.posX + el.size[0]
+//       );
+//     }
+//   }
+//   _spawnRectangles(isOn) {
+//     if(isOn) {
+//       this.spawnRectangleTimeoutId = setTimeout( async () => {
+//         await this.rectCollection.add(new Rectangle({ maxPosX: this.canvas.width, 
+//                                                       maxPosY: 0,
+//                                                       moveDownStepRange: this.config.rectangleProps.moveDownStepRange,
+//                                                       size: this.config.rectangleProps.size }));
+//         this._spawnRectangles(true);
+//       }, this._randomNum(...this.config.gameProcess.spawnRectanglesTimeRange));
+//     } else {
+//       clearTimeout(this.spawnRectangleTimeoutId);
+//     }
+//   }
+//   _renderRectCollection() {
+//     this.canvas.renderFrameWithRectCollection(this.rectCollection.content);
+//     if(this.gameOn) {
+//       this.rectCollection.setNextFrame()
+//       requestAnimationFrame(this._renderRectCollection.bind(this));
+//      } else this.canvas.clear();
+//   }
+//   _randomNum(min, max) {
+//     return Math.floor(Math.random() * (max - min + 1) + min);
+//   }
+// }
 
 class Canvas {
   constructor(canvasEl) {
