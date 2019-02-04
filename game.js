@@ -117,29 +117,18 @@ class GameScene {
         this.gameObjectCollections.forEach(col => col.stopBackgroundEventLoop());
     }
 }
-
-class RectangleCollection {
+class SceneCollection {
     constructor() {
         this.content = [];
-        this.spawnRectangleTimeoutId;
     }
     drawOn(canvas) {
         this.content.forEach(el => el.drawOnCanvas(canvas));
     }
-    runBackgroundEventLoop() {
-        this.spawnRectangleTimeoutId = setTimeout( async () => {
-            await this.add(new Rectangle(this._buildParamsForNewRectangle()));
-            this.runBackgroundEventLoop();
-            }, this._randomNum(...Game.config.gameProcess.spawnRectanglesTimeRange));
+    add(el) {
+        this.content.push(el);
     }
-    stopBackgroundEventLoop() {
-        clearTimeout(this.spawnRectangleTimeoutId);
-    }
-    add(rect) {
-        this.content.push(rect);
-    }
-    remove(rect) {
-        this.content = this.content.filter(el => el !== rect);
+    remove(el) {
+        this.content = this.content.filter(collectionEl => el !== collectionEl);
     }
     clear() {
         this.content = [];
@@ -153,8 +142,34 @@ class RectangleCollection {
             }
         }
     }
+    runBackgroundEventLoop() {}
+    stopBackgroundEventLoop() {}
     _fireEventByClick(currEl) {
         if (typeof currEl.fireEventByClick === 'function') currEl.fireEventByClick(click);
+    }
+    _randomNum(min, max) {
+        return Math.floor(Math.random() * (max - min + 1) + min);
+      }
+    _randomColor() {
+        return '#' + Math.floor(Math.random()*16777215).toString(16);
+    }
+}
+class RectangleCollection extends SceneCollection {
+    constructor() {
+        super();
+        this.spawnRectangleTimeoutId;
+    }
+    runBackgroundEventLoop() {
+        this.spawnRectangleTimeoutId = setTimeout( async () => {
+            await this.add(new Rectangle(this._buildParamsForNewRectangle()));
+            this.runBackgroundEventLoop();
+            }, this._randomNum(...Game.config.gameProcess.spawnRectanglesTimeRange));
+    }
+    stopBackgroundEventLoop() {
+        clearTimeout(this.spawnRectangleTimeoutId);
+    }
+    _fireEventByClick(currEl) {
+        super();
         this.remove(currEl);
     }
     _buildParamsForNewRectangle() {
@@ -170,33 +185,9 @@ class RectangleCollection {
             moveDownStepRange: this._randomNum(moveDownStepRange),
         }
     }
-    _randomNum(min, max) {
-        return Math.floor(Math.random() * (max - min + 1) + min);
-      }
-    _randomColor() {
-        return '#' + Math.floor(Math.random()*16777215).toString(16);
-    }
 }
-class InterfaceCollection {
-    constructor() {
-        this.content = [];
-        this.content.push({wasClicked: () => true});//stub element method
-    }
-    drawOn(canvas) {
-        this.content.forEach(el => el.drawOnCanvas(canvas));
-    } 
-    handleClickAndReturnFeedback(click) {
-        for ( let i = this.content.length -1; i >= 0; i-- ) {
-            let currEl = this.content[i];
-            if(currEl.wasClicked(click)) {
-                this._fireEventByClick(currEl);
-                return true;
-            }
-        }
-    }
-    _fireEventByClick(currEl) {
-        console.warn('event was fired');
-    }
+class InterfaceCollection extends SceneCollection {
+    
 }
 class MenuScene extends GameScene { }
 
