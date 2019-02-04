@@ -11,7 +11,8 @@ function setupGame(config) {
                                               sceneCollection: sceneCollection,
                                               currScene: sceneCollection.menu });
     Game.controller = gameController;
-    Game.canvas = canvas;
+    Game.config = config;
+    Game.config.canvas = { width: canvas.width, height: canvas.height };
     let game        = new Game({ canvas: canvas, 
                           score: score,
                           sceneCollection: sceneCollection,
@@ -120,17 +121,48 @@ class GameScene {
 class RectangleCollection {
     constructor() {
         this.content = [];
+        this.spawnRectangleTimeoutId;
     }
     drawOn(canvas) {
         this.content.forEach(el => el.drawOnCanvas(canvas));
     }
     runBackgroundEventLoop() {
-        console.log('run bg event loop')
+        this.spawnRectangleTimeoutId = setTimeout( async () => {
+            await this.add(new Rectangle(this._buildParamsForNewRectangle()));
+            this.runBackgroundEventLoop();
+            }, this._randomNum(...Game.config.gameProcess.spawnRectanglesTimeRange));
     }
     stopBackgroundEventLoop() {
-        console.log('stop bg event loop')
+        clearTimeout(this.spawnRectangleTimeoutId);
     }
-
+    add(rect) {
+        this.content.push(rect);
+    }
+    remove(rect) {
+        this.content = this.content.filter(el => el !== rect);
+    }
+    clear() {
+        this.content = [];
+    }
+    _buildParamsForNewRectangle() {
+        const maxPosX           = Game.config.canvas.width - Game.config.rectangleProps.size[0];
+        const maxPosY           = Game.config.canvas.height-Game.config.rectangleProps.size[1];
+        const size              = Game.config.rectangleProps.size;
+        const moveDownStepRange = Game.config.rectangleProps.moveDownStepRange;
+        return {
+            posX: this._randomNum(0, maxPosX),
+            posY: this._randomNum(0, maxPosY),
+            size: size,
+            color: this._randomColor(),
+            moveDownStepRange: this._randomNum(moveDownStepRange),
+        }
+    }
+    _randomNum(min, max) {
+        return Math.floor(Math.random() * (max - min + 1) + min);
+      }
+    _randomColor() {
+        return '#' + Math.floor(Math.random()*16777215).toString(16);
+    }
 }
 class InterfaceCollection {
     constructor() {
