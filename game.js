@@ -2,11 +2,12 @@ function setupGame(config) {
     let scoreEl  = document.getElementById('score');
     let canvasEl = document.getElementById('canvas');
   
-    let score           = new GameScore(scoreEl);
+    let score           = new GameScore(scoreEl);//must use singleton pattern
     let canvas          = new Canvas(canvasEl);
-    let sceneCollection = { menu: new MenuScene([new RectangleCollection], new InterfaceCollection, canvas),
-                            game: new GameScene([new RectangleCollection], new InterfaceCollection, canvas)
-                          };//mocked collections
+    let interfaceFabric = new InterfaceCollectionFabric;
+    let sceneCollection = { menu: new MenuScene([new RectangleCollection], interfaceFabric.createMenuSceneInterface(), canvas),
+                            game: new GameScene([new RectangleCollection], interfaceFabric.createGameSceneInterface(), canvas)
+                          };
     let gameController  = new GameController({ score: score, 
                                               sceneCollection: sceneCollection,
                                               currScene: sceneCollection.menu });
@@ -186,8 +187,35 @@ class RectangleCollection extends SceneCollection {
         }
     }
 }
-class InterfaceCollection extends SceneCollection {
-    
+class InterfaceCollectionFabric {
+    createGameSceneInterface() {
+        const gameInterfaceClass = this._gameInterfaceClass();
+        return new gameInterfaceClass;
+    }
+    createMenuSceneInterface() {
+        const menuInterfaceClass = this._menuInterfaceClass();
+        return new menuInterfaceClass;
+    }
+    _gameInterfaceClass() {
+        return (
+            class GameSceneInterfaceCollection extends SceneCollection {
+                constructor() {
+                    this.content = [ new StopGameButton,
+                                     new GameScore ];//must use singleton pattern
+                }
+            }
+        );
+    }
+    _menuInterfaceClass() {
+        return (
+            class MenuSceneInteraceClass extends SceneCollection {
+                constructor() {
+                    this.content = [ new StartGameButton,
+                                     new GameScore ];//must use singleton pattern
+                }
+            }
+        );
+    }
 }
 class MenuScene extends GameScene { }
 
