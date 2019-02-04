@@ -144,6 +144,19 @@ class RectangleCollection {
     clear() {
         this.content = [];
     }
+    handleClickAndReturnFeedback(click) {
+        for ( let i = this.content.length -1; i >= 0; i-- ) {
+            let currEl = this.content[i];
+            if(currEl.wasClicked(click)) {
+                this._fireEventByClick(currEl);
+                return true;
+            }
+        }
+    }
+    _fireEventByClick(currEl) {
+        if (typeof currEl.fireEventByClick === 'function') currEl.fireEventByClick(click);
+        this.remove(currEl);
+    }
     _buildParamsForNewRectangle() {
         const maxPosX           = Game.config.canvas.width - Game.config.rectangleProps.size[0];
         const maxPosY           = Game.config.canvas.height-Game.config.rectangleProps.size[1];
