@@ -4,13 +4,14 @@ function setupGame(config) {
   
     let score           = new GameScore(scoreEl);
     let canvas          = new Canvas(canvasEl);
-    let sceneCollection = { menu: new MenuScene([new RectangleCollection], new InterfaceCollection),
-                            game: new GameScene([new RectangleCollection], new InterfaceCollection)
+    let sceneCollection = { menu: new MenuScene([new RectangleCollection], new InterfaceCollection, canvas),
+                            game: new GameScene([new RectangleCollection], new InterfaceCollection, canvas)
                           };//mocked collections
     let gameController  = new GameController({ score: score, 
                                               sceneCollection: sceneCollection,
                                               currScene: sceneCollection.menu });
     Game.controller = gameController;
+    Game.canvas = canvas;
     let game        = new Game({ canvas: canvas, 
                           score: score,
                           sceneCollection: sceneCollection,
@@ -72,9 +73,11 @@ function GameController({ score, currScene, sceneCollection }) {
 
 class GameScene {
     constructor(gameObjectCollections, 
-                interfaceObjectCollection) {
+                interfaceObjectCollection,
+                canvas) {
         this.gameObjectCollections     = [...gameObjectCollections];
         this.interfaceObjectCollection = interfaceObjectCollection;
+        this.canvas = canvas;
         this.isRunning = false;
     }
     run() {
@@ -100,9 +103,9 @@ class GameScene {
     _renderAllColections() {
         if(this.isRunning) {
             this.gameObjectCollections.forEach(gameObjCollection => {
-                gameObjCollection.animate();
+                gameObjCollection.drawOn(this.canvas);
             });
-            this.interfaceObjectCollection.animate();
+            this.interfaceObjectCollection.drawOn(this.canvas);
             requestAnimationFrame(this._renderAllColections.bind(this));
         }
     }
@@ -115,8 +118,11 @@ class GameScene {
 }
 
 class RectangleCollection {
-    animate() {
-        console.log('animate game collection');
+    constructor() {
+        this.content = [];
+    }
+    drawOn(canvas) {
+        this.content.forEach(el => el.drawOnCanvas(canvas));
     }
     runBackgroundEventLoop() {
         console.log('run bg event loop')
@@ -131,8 +137,8 @@ class InterfaceCollection {
         this.content = [];
         this.content.push({wasClicked: () => true});//stub element method
     }
-    animate() {
-        console.log('animate interface');
+    drawOn(canvas) {
+        this.content.forEach(el => el.drawOnCanvas(canvas));
     } 
     handleClickAndReturnFeedback(click) {
         for ( let i = this.content.length -1; i >= 0; i-- ) {
