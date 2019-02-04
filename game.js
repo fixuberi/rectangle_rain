@@ -2,7 +2,7 @@ function setupGame(config) {
     let scoreEl  = document.getElementById('score');
     let canvasEl = document.getElementById('canvas');
   
-    let score           = new GameScore(scoreEl);//must use singleton pattern
+    let score           = GameScoreSingletone.getInstance()
     let canvas          = new Canvas(canvasEl);
     let interfaceFabric = new InterfaceCollectionFabric;
     let sceneCollection = { menu: new MenuScene([new RectangleCollection], interfaceFabric.createMenuSceneInterface(), canvas),
@@ -201,7 +201,7 @@ class InterfaceCollectionFabric {
             class GameSceneInterfaceCollection extends SceneCollection {
                 constructor() {
                     this.content = [ new StopGameButton,
-                                     new GameScore ];//must use singleton pattern
+                                     GameScoreSingletone.getInstance() ];
                 }
             }
         );
@@ -211,7 +211,7 @@ class InterfaceCollectionFabric {
             class MenuSceneInteraceClass extends SceneCollection {
                 constructor() {
                     this.content = [ new StartGameButton,
-                                     new GameScore ];//must use singleton pattern
+                                     GameScoreSingletone.getInstance() ];
                 }
             }
         );

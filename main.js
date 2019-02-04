@@ -164,21 +164,29 @@ class Rectangle {
   }
 }
 
-class GameScore {
-  constructor(scoreEl) {
-    this.element = scoreEl;
-    this.value = 0;
+var GameScoreSingletone = (function() {
+  var gameScoreInstance;
+
+  class GameScore {
+    constructor() {
+      this.value = 0;
+    }
+    incrementValue() {
+      this.value += 1;
+     }
+    resetValue() {
+      this.value = 0;
+    }
   }
-  incrementValue() {
-    this.value += 1;
-    this._updateElement();
+  function createInstance() {
+    var instance = new GameScore();
+    return instance;
   }
-  resetValue() {
-    this.value = 0;
-    this._updateElement();
+  return {
+    getInstance: function() {
+      if(!gameScoreInstance) gameScoreInstance = createInstance();
+      return gameScoreInstance; 
+    }
   }
-  _updateElement() {
-    this.element.innerText = this.value;
-  }
-}
+})();
 
