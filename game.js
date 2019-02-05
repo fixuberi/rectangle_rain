@@ -200,8 +200,8 @@ class InterfaceCollectionFabric {
         return (
             class GameSceneInterfaceCollection extends SceneCollection {
                 constructor() {
-                    this.content = [ new StopGameButton,
-                                     GameScoreSingletone.getInstance() ];
+                    this.content = [ StopGameButtonSingletone.getInstance(),
+                                     GameScoreSingletone.getInstance()      ];
                 }
             }
         );
@@ -210,8 +210,8 @@ class InterfaceCollectionFabric {
         return (
             class MenuSceneInteraceClass extends SceneCollection {
                 constructor() {
-                    this.content = [ new StartGameButton,
-                                     GameScoreSingletone.getInstance() ];
+                    this.content = [ StartGameButtonSingletone.getInstance(),
+                                     GameScoreSingletone.getInstance()       ];
                 }
             }
         );
