@@ -1,25 +1,39 @@
 function setupGame(config) {
-    let scoreEl  = document.getElementById('score');
     let canvasEl = document.getElementById('canvas');
-  
-    let score           = GameScoreSingletone.getInstance()
     let canvas          = new Canvas(canvasEl);
+  
+    let score           = getSingletoneOf(GameScore).getInstance();
+    let stopGameButton  = getSingletoneOf(StopGameButton).getInstance();
+    let startGameButton = getSingletoneOf(StartGameButton).getInstance();
+
     let interfaceFabric = new InterfaceCollectionFabric;
-    let sceneCollection = { menu: new MenuScene([new RectangleCollection], interfaceFabric.createMenuSceneInterface(), canvas),
+    let sceneCollection = { 
+                            menu: new MenuScene([new RectangleCollection], interfaceFabric.createMenuSceneInterface(), canvas),
                             game: new GameScene([new RectangleCollection], interfaceFabric.createGameSceneInterface(), canvas)
                           };
-    let gameController  = new GameController({ score: score, 
+    let gameController  = new GameController({ 
+                                              score:           score, 
                                               sceneCollection: sceneCollection,
-                                              currScene: sceneCollection.menu });
-    Game.controller = gameController;
-    Game.config = config;
-    Game.config.canvas = { width: canvas.width, height: canvas.height };
-    let game        = new Game({ canvas: canvas, 
-                          score: score,
+                                              currScene:       sceneCollection.menu 
+                                            });
+    Game.controller    = gameController;
+    Game.config        = config;
+    Game.config.canvas = { 
+                            width:  canvas.width, 
+                            height: canvas.height 
+                        };
+    Game.interface     = {
+                            scoreCounter:    score,
+                            stopGameButton:  stopGameButton,
+                            startGameButton: startGameButton,
+                        };
+    let game = new Game({ 
+                          canvas:          canvas, 
+                          score:           score,
                           sceneCollection: sceneCollection,
-                          currentScene: sceneCollection.menu,
-                          controller: gameController,
-                          config: config
+                          currentScene:    sceneCollection.menu,
+                          controller:      gameController,
+                          config:          config
                         });
     canvasEl.addEventListener('click', (ev) => game.handleClick(ev));
     game.run();
@@ -200,8 +214,10 @@ class InterfaceCollectionFabric {
         return (
             class GameSceneInterfaceCollection extends SceneCollection {
                 constructor() {
-                    this.content = [ StopGameButtonSingletone.getInstance(),
-                                     GameScoreSingletone.getInstance()      ];
+                    this.content = [ 
+                                    Game.interface.stopGameButton,
+                                    Game.interface.scoreCounter 
+                                   ];
                 }
             }
         );
@@ -210,8 +226,10 @@ class InterfaceCollectionFabric {
         return (
             class MenuSceneInteraceClass extends SceneCollection {
                 constructor() {
-                    this.content = [ StartGameButtonSingletone.getInstance(),
-                                     GameScoreSingletone.getInstance()       ];
+                    this.content = [ 
+                                     Game.interface.startGameButton,
+                                     Game.interface.scoreCounter 
+                                    ];
                 }
             }
         );

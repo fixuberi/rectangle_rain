@@ -10,6 +10,22 @@ const config = {
 
 document.body.onload = () => setupGame(config);
 
+function getSingletoneOf(className) {
+  (function() {
+    var instance;
+    function createInstance() {
+      let newInstance = new className;
+      return newInstance;
+    }
+    return {
+      getInstance: function() {
+        if(!instance) instance = createInstance();
+        return instance;
+      }
+    }
+  })();
+}
+
 // function setupGame(config) {
 //   let scoreEl  = document.getElementById('score');
 //   let canvasEl = document.getElementById('canvas');
@@ -199,104 +215,58 @@ class TextElement extends BasicElement {
   }
   _setPosition(canvas) { }
 }
-var GameScoreSingletone = (function() {
-  var gameScoreInstance;
-
-  class GameScore extends TextElement {
-    constructor(params) {
-      super(params);
-      this.value    = this.value || 0;
-      this.fontSize = this.fontSize || '40px';
-      this.font     = this.font || 'Arial';
-    }
-    incrementValue() {
-      this.value += 1;
-     }
-    resetValue() {
-      this.value = 0;
-    }
-    drawOnCanvas(canvas) {
-      this._setDimensions(canvas);
-      this._setPosition(canvas);
-      super(canvas);
-    }
-    _setPosition(canvas) {
-      this.posX = canvas.width * 0.9 - this.width / 2;
-      this.posY = canvas.height * 0.1 - this.height / 2;
-    }
+class GameScore extends TextElement {
+  constructor(params) {
+    super(params);
+    this.value    = this.value || 0;
+    this.fontSize = this.fontSize || '40px';
+    this.font     = this.font || 'Arial';
   }
-  function createInstance() {
-    var instance = new GameScore();
-    return instance;
+  incrementValue() {
+    this.value += 1;
+   }
+  resetValue() {
+    this.value = 0;
   }
-  return {
-    getInstance: function() {
-      if(!gameScoreInstance) gameScoreInstance = createInstance();
-      return gameScoreInstance; 
-    }
+  drawOnCanvas(canvas) {
+    this._setDimensions(canvas);
+    this._setPosition(canvas);
+    super(canvas);
   }
-})();
-
-var StartGameButtonSingletone = (function() {
-  var startButtonInstance;
-
-  class StartGameButton extends TextElement {
-    constructor(params) {
-      super(params);
-      this.value    = this.value || 'PLAY';
-      this.fontSize = this.fontSize ||'100px';
-      this.font     = this.font || 'Arial';
-    }
-    fireEventByClick(click) {
-      Game.controller.stopCurrentScene();
-      Game.controller.runGameScene();
-    }
-    _setPosition(canvas) {
-      this.posX = canvas.width * 0.5 - this.width / 2;
-      this.posY = canvas.height * 0.5 - this.height / 2;
-    }
+  _setPosition(canvas) {
+    this.posX = canvas.width * 0.9 - this.width / 2;
+    this.posY = canvas.height * 0.1 - this.height / 2;
   }
-
-  function createInstance() {
-    var instance = new StartGameButton();
-    return instance;
+}
+class StartGameButton extends TextElement {
+  constructor(params) {
+    super(params);
+    this.value    = this.value || 'PLAY';
+    this.fontSize = this.fontSize ||'100px';
+    this.font     = this.font || 'Arial';
   }
-  return {
-    getInstance: function() {
-      if(!startButtonInstance) startButtonInstance = createInstance();
-      return startButtonInstance; 
-    }
+  fireEventByClick(click) {
+    Game.controller.stopCurrentScene();
+    Game.controller.runGameScene();
   }
-})();
-
-var StopGameButtonSingletone = (function() {
-  var stopButtonInstance;
-
-  class StopGameButton extends TextElement {
-    constructor(params) {
-      super(params);
-      this.value    = this.value || 'MENU';
-      this.fontSize = this.fontSize ||'80px';
-      this.font     = this.font || 'Arial';
-    }
-    fireEventByClick(click) {
-      Game.controller.stopCurrentScene();
-      Game.controller.runMenuScene();
-    }
-    _setPosition(canvas) {
-      this.posX = canvas.width * 0.1 - this.width / 2;
-      this.posY = canvas.height * 0.1 - this.height / 2;
-    }
+  _setPosition(canvas) {
+    this.posX = canvas.width * 0.5 - this.width / 2;
+    this.posY = canvas.height * 0.5 - this.height / 2;
   }
-
-  function createInstance() {
-    var instance = new StopGameButton();
-    return instance;
+}
+class StopGameButton extends TextElement {
+  constructor(params) {
+    super(params);
+    this.value    = this.value || 'MENU';
+    this.fontSize = this.fontSize ||'80px';
+    this.font     = this.font || 'Arial';
   }
-  return {
-    getInstance: function() {
-      if(!stopButtonInstance) stopButtonInstance = createInstance();
-      return stopButtonInstance; 
-    }
+  fireEventByClick(click) {
+    Game.controller.stopCurrentScene();
+    Game.controller.runMenuScene();
   }
-})();
+  _setPosition(canvas) {
+    this.posX = canvas.width * 0.1 - this.width / 2;
+    this.posY = canvas.height * 0.1 - this.height / 2;
+  }
+}
